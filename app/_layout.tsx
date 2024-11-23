@@ -3,10 +3,11 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import mobileAds from 'react-native-google-mobile-ads';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { Dimensions } from 'react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -21,18 +22,44 @@ mobileAds()
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const [isLandscape, setIsLandscape] = useState(false);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   useEffect(() => {
-    // Lock the orientation to landscape
-    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+    // Check if device is in landscape mode
+    const checkOrientation = () => {
+      const { width, height } = Dimensions.get('window');
+      const newIsLandscape = width > height;
+      
+      if (newIsLandscape !== isLandscape) {
+        setIsLandscape(newIsLandscape);
+        if (newIsLandscape) {
+          ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+        } else {
+          ScreenOrientation.unlockAsync();
+        }
+      }
+    };
+
+    // Initial check
+    checkOrientation();
+
+    // Listen for orientation changes
+    const subscription = Dimensions.addEventListener('change', checkOrientation);
 
     if (loaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+
+    // Cleanup
+    return () => {
+      subscription.remove();
+      // Make sure to unlock orientation when component unmounts
+      ScreenOrientation.unlockAsync();
+    };
+  }, [loaded, isLandscape]);
 
   if (!loaded) {
     return null;
