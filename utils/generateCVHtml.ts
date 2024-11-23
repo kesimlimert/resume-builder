@@ -1,6 +1,9 @@
-import { CVData } from "@/types/cv";
+import { CVData, AppLanguage } from "@/types/cv";
+import { translations } from "@/utils/translations";
 
-export function generateCVHtml(data: CVData): string {
+export function generateCVHtml(data: CVData, language: AppLanguage): string {
+  const t = translations[language];
+  
   return `
     <!DOCTYPE html>
     <html>
@@ -17,7 +20,7 @@ export function generateCVHtml(data: CVData): string {
             margin-bottom: 5px;
           }
           .job-title {
-            color: #4a5568;
+            color: #7f8c8d;
             font-size: 1.2em;
             margin-bottom: 20px;
           }
@@ -28,15 +31,20 @@ export function generateCVHtml(data: CVData): string {
             color: #34495e;
             margin-bottom: 10px;
           }
-          .bio {
-            font-style: italic;
-            color: #555;
-            margin: 20px 0;
-            line-height: 1.6;
-          }
           .education-location {
             color: #666;
             font-style: italic;
+          }
+          .work-details {
+            color: #666;
+            font-size: 0.9em;
+          }
+          .language-item {
+            margin-bottom: 5px;
+          }
+          .language-proficiency {
+            color: #666;
+            margin-left: 10px;
           }
         </style>
       </head>
@@ -55,7 +63,7 @@ export function generateCVHtml(data: CVData): string {
 
         ${data.education.length > 0 ? `
           <div class="section">
-            <h2 class="section-title">Education</h2>
+            <h2 class="section-title">${t.education}</h2>
             ${data.education
               .map(
                 (edu) => `
@@ -75,7 +83,7 @@ export function generateCVHtml(data: CVData): string {
 
         ${data.experience.length > 0 ? `
           <div class="section">
-            <h2 class="section-title">Experience</h2>
+            <h2 class="section-title">${t.experience}</h2>
             ${data.experience
               .map(
                 (exp) => `
@@ -103,7 +111,7 @@ export function generateCVHtml(data: CVData): string {
 
         ${data.languages.length > 0 ? `
           <div class="section">
-            <h2 class="section-title">Languages</h2>
+            <h2 class="section-title">${t.languages}</h2>
             ${data.languages
               .map(
                 (lang) => `
@@ -121,7 +129,7 @@ export function generateCVHtml(data: CVData): string {
 
         ${data.skills.length > 0 ? `
           <div class="section">
-            <h2 class="section-title">Skills</h2>
+            <h2 class="section-title">${t.skills}</h2>
             <p>${data.skills.filter(Boolean).join(', ')}</p>
           </div>
         ` : ''}

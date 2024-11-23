@@ -2,10 +2,9 @@ import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { ThemedView } from '@/components/ThemedView';
 import { CVForm } from '@/components/CVForm';
 import { generateCVHtml } from '@/utils/generateCVHtml';
-import { CVData } from '@/types/cv';
+import { CVData, AppLanguage } from '@/types/cv';
 
 export default function Home() {
   const [cvData, setCVData] = useState<CVData>({
@@ -23,9 +22,9 @@ export default function Home() {
     skills: [],
   });
 
-  const handleGeneratePDF = async () => {
+  const handleGenerateCV = async (language: AppLanguage) => {
     try {
-      const html = generateCVHtml(cvData);
+      const html = generateCVHtml(cvData, language);
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri);
     } catch (error) {
@@ -34,10 +33,12 @@ export default function Home() {
   };
 
   return (
-    <ThemedView style={{ flex: 1 }}>
-      <ScrollView style={{ padding: 16 }}>
-        <CVForm data={cvData} onUpdate={setCVData} onSubmit={handleGeneratePDF} />
-      </ScrollView>
-    </ThemedView>
+    <ScrollView style={{ flex: 1, padding: 16 }}>
+      <CVForm 
+        data={cvData} 
+        onUpdate={setCVData} 
+        onSubmit={handleGenerateCV} 
+      />
+    </ScrollView>
   );
 } 

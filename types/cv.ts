@@ -24,7 +24,9 @@ export interface Experience {
   locationType: string;
 }
 
-export interface Language {
+export type AppLanguage = 'en' | 'tr';
+
+export interface LanguageSkill {
   name: string;
   proficiency: string;
 }
@@ -34,6 +36,6 @@ export interface CVData {
   bio: string;
   education: Education[];
   experience: Experience[];
-  languages: Language[];
+  languages: LanguageSkill[];
   skills: string[];
 } 

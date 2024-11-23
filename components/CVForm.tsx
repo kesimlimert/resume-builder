@@ -3,46 +3,60 @@ import { View, TextInput, Button, StyleSheet, ScrollView, Modal, TouchableOpacit
 import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import { useThemeColor } from '@/hooks/useThemeColor';
-import { CVData, Language } from '@/types/cv';
-
-const PROFICIENCY_LEVELS = [
-  "Beginner",
-  "Intermediate",
-  "Advanced",
-  "Native",
-  "Fluent",
-];
-
-const WORK_TYPES = [
-  "Full-time",
-  "Part-time",
-  "Contract",
-  "Internship",
-  "Freelance"
-];
-
-const LOCATION_TYPES = [
-  "On-site",
-  "Remote",
-  "Hybrid"
-];
+import { useTranslations } from '@/hooks/useTranslations';
+import { CVData, LanguageSkill, AppLanguage } from '@/types/cv';
+import { translations } from '@/utils/translations';
 
 interface CVFormProps {
   data: CVData;
   onUpdate: (data: CVData) => void;
-  onSubmit: () => void;
+  onSubmit: (language: AppLanguage) => void;
 }
 
 export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
-  const [showProficiencyModal, setShowProficiencyModal] = useState(false);
+  const { t, language } = useTranslations();
+  const [cvLanguage, setCvLanguage] = useState<AppLanguage>(language as AppLanguage);
   const [showWorkTypeModal, setShowWorkTypeModal] = useState(false);
   const [showLocationTypeModal, setShowLocationTypeModal] = useState(false);
-  const [currentLanguageIndex, setCurrentLanguageIndex] = useState<number>(0);
+  const [showProficiencyModal, setShowProficiencyModal] = useState(false);
   const [currentExperienceIndex, setCurrentExperienceIndex] = useState<number>(0);
-  
+  const [currentLanguageIndex, setCurrentLanguageIndex] = useState<number>(0);
+  const [showLanguageModal, setShowLanguageModal] = useState(false);
+
   const borderColor = useThemeColor('border');
   const inputBackground = useThemeColor('card');
   const textColor = useThemeColor('text');
+
+  const WORK_TYPES = [
+    t.fullTime,
+    t.partTime,
+    t.contract,
+    t.internship,
+    t.freelance
+  ];
+
+  const LOCATION_TYPES = [
+    t.onsite,
+    t.remote,
+    t.hybrid
+  ];
+
+  const PROFICIENCY_LEVELS = [
+    t.beginner,
+    t.intermediate,
+    t.advanced,
+    t.native,
+    t.fluent
+  ];
+
+  const inputStyle = [
+    styles.input,
+    {
+      borderColor,
+      backgroundColor: inputBackground,
+      color: textColor
+    }
+  ];
 
   const updatePersonalInfo = (field: string, value: string) => {
     onUpdate({
@@ -54,22 +68,13 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
     });
   };
 
-  const updateEducation = (index: number, field: string, value: string) => {
-    const newEducation = [...data.education];
-    newEducation[index] = {
-      ...newEducation[index],
-      [field]: value,
-    };
-    onUpdate({ ...data, education: newEducation });
-  };
-
-  const updateExperience = (index: number, field: string, value: string) => {
-    const newExperience = [...data.experience];
-    newExperience[index] = {
-      ...newExperience[index],
-      [field]: value,
-    };
-    onUpdate({ ...data, experience: newExperience });
+  const updateBio = (value: string) => {
+    if (value.length <= 300) {
+      onUpdate({
+        ...data,
+        bio: value,
+      });
+    }
   };
 
   const addEducation = () => {
@@ -77,15 +82,25 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
       ...data,
       education: [
         ...data.education,
-        { 
-          school: '', 
-          location: '', 
-          degree: '', 
-          year: '', 
-          description: '' 
-        },
+        { school: '', location: '', degree: '', year: '', description: '' },
       ],
     });
+  };
+
+  const removeEducation = (indexToRemove: number) => {
+    onUpdate({
+      ...data,
+      education: data.education.filter((_, index) => index !== indexToRemove),
+    });
+  };
+
+  const updateEducation = (index: number, field: string, value: string) => {
+    const newEducation = [...data.education];
+    newEducation[index] = {
+      ...newEducation[index],
+      [field]: value,
+    };
+    onUpdate({ ...data, education: newEducation });
   };
 
   const addExperience = () => {
@@ -100,10 +115,52 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
           period: '',
           description: '',
           workType: '',
-          locationType: ''
+          locationType: '',
         },
       ],
     });
+  };
+
+  const removeExperience = (indexToRemove: number) => {
+    onUpdate({
+      ...data,
+      experience: data.experience.filter((_, index) => index !== indexToRemove),
+    });
+  };
+
+  const updateExperience = (index: number, field: string, value: string) => {
+    const newExperience = [...data.experience];
+    newExperience[index] = {
+      ...newExperience[index],
+      [field]: value,
+    };
+    onUpdate({ ...data, experience: newExperience });
+  };
+
+  const addLanguage = () => {
+    onUpdate({
+      ...data,
+      languages: [
+        ...data.languages,
+        { name: '', proficiency: '' } as LanguageSkill,
+      ],
+    });
+  };
+
+  const removeLanguage = (indexToRemove: number) => {
+    onUpdate({
+      ...data,
+      languages: data.languages.filter((_, index) => index !== indexToRemove),
+    });
+  };
+
+  const updateLanguage = (index: number, field: keyof LanguageSkill, value: string) => {
+    const newLanguages = [...data.languages];
+    newLanguages[index] = {
+      ...newLanguages[index],
+      [field]: value,
+    };
+    onUpdate({ ...data, languages: newLanguages });
   };
 
   const addSkill = () => {
@@ -113,172 +170,54 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
     });
   };
 
+  const removeSkill = (indexToRemove: number) => {
+    onUpdate({
+      ...data,
+      skills: data.skills.filter((_, index) => index !== indexToRemove),
+    });
+  };
+
   const updateSkill = (index: number, value: string) => {
     const newSkills = [...data.skills];
     newSkills[index] = value;
     onUpdate({ ...data, skills: newSkills });
   };
 
-  const removeEducation = (indexToRemove: number) => {
-    onUpdate({
-      ...data,
-      education: data.education.filter((_: any, index: number) => index !== indexToRemove),
-    });
+  const handleGenerateCV = () => {
+    onSubmit(cvLanguage);
   };
 
-  const removeExperience = (indexToRemove: number) => {
-    onUpdate({
-      ...data,
-      experience: data.experience.filter((_: any, index: number) => index !== indexToRemove),
-    });
-  };
-
-  const removeSkill = (indexToRemove: number) => {
-    onUpdate({
-      ...data,
-      skills: data.skills.filter((_: any, index: number) => index !== indexToRemove),
-    });
-  };
-
-  const addLanguage = () => {
-    onUpdate({
-      ...data,
-      languages: [
-        ...data.languages,
-        { name: '', proficiency: 'Beginner' },
-      ],
-    });
-  };
-
-  const removeLanguage = (indexToRemove: number) => {
-    onUpdate({
-      ...data,
-      languages: data.languages.filter((_: Language, index: number) => index !== indexToRemove),
-    });
-  };
-
-  const updateLanguage = (index: number, field: string, value: string) => {
-    const newLanguages = [...data.languages];
-    newLanguages[index] = {
-      ...newLanguages[index],
-      [field]: value,
-    };
-    onUpdate({ ...data, languages: newLanguages });
-  };
-
-  const updateBio = (value: string) => {
-    if (value.length <= 300) {
-      onUpdate({
-        ...data,
-        bio: value,
-      });
-    }
-  };
-
-  const inputStyle = [
-    styles.input, 
-    { 
-      borderColor, 
-      backgroundColor: inputBackground, 
-      color: textColor 
-    }
-  ];
-
-  const mailInputStyle = [
-    styles.input, 
-    { 
-      borderColor, 
-      backgroundColor: inputBackground, 
-      color: textColor,
-      textTransform: 'lowercase',
-    }
-  ];
-
-  const renderProficiencyModal = () => (
+  const renderLanguageModal = () => (
     <Modal
-      visible={showProficiencyModal}
+      visible={showLanguageModal}
       transparent={true}
       animationType="slide"
-      onRequestClose={() => setShowProficiencyModal(false)}
+      onRequestClose={() => setShowLanguageModal(false)}
     >
       <View style={styles.modalOverlay}>
         <ThemedView style={styles.modalContent}>
-          <ThemedText style={styles.modalTitle}>Select Proficiency</ThemedText>
+          <ThemedText style={styles.modalTitle}>{t.selectCVLanguage}</ThemedText>
           <ScrollView>
-            {PROFICIENCY_LEVELS.map((level) => (
-              <TouchableOpacity
-                key={level}
-                style={styles.modalOption}
-                onPress={() => {
-                  updateLanguage(currentLanguageIndex, 'proficiency', level);
-                  setShowProficiencyModal(false);
-                }}
-              >
-                <ThemedText>{level}</ThemedText>
-              </TouchableOpacity>
-            ))}
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={() => {
+                setCvLanguage('en');
+                setShowLanguageModal(false);
+              }}
+            >
+              <ThemedText>English</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={() => {
+                setCvLanguage('tr');
+                setShowLanguageModal(false);
+              }}
+            >
+              <ThemedText>Türkçe</ThemedText>
+            </TouchableOpacity>
           </ScrollView>
-          <Button title="Cancel" onPress={() => setShowProficiencyModal(false)} />
-        </ThemedView>
-      </View>
-    </Modal>
-  );
-
-  const renderWorkTypeModal = () => (
-    <Modal
-      visible={showWorkTypeModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowWorkTypeModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <ThemedView style={styles.modalContent}>
-          <ThemedText style={styles.modalTitle}>Select Work Type</ThemedText>
-          <ScrollView>
-            {WORK_TYPES.map((type) => (
-              <TouchableOpacity
-                key={type}
-                style={styles.modalOption}
-                onPress={() => {
-                  updateExperience(currentExperienceIndex, 'workType', type);
-                  setShowWorkTypeModal(false);
-                }}
-              >
-                <ThemedText>{type}</ThemedText>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-          <Button title="Cancel" onPress={() => setShowWorkTypeModal(false)} />
-        </ThemedView>
-      </View>
-    </Modal>
-  );
-
-  const renderLocationTypeModal = () => (
-    <Modal
-      visible={showLocationTypeModal}
-      transparent={true}
-      animationType="slide"
-      onRequestClose={() => setShowLocationTypeModal(false)}
-    >
-      <View style={styles.modalOverlay}>
-        <ThemedView style={styles.modalContent}>
-          <ThemedText style={styles.modalTitle}>Select Location Type</ThemedText>
-          <ScrollView>
-            {LOCATION_TYPES.map((type) => (
-              <TouchableOpacity
-                key={type}
-                style={styles.modalOption}
-                onPress={() => {
-                  updateExperience(currentExperienceIndex, 'locationType', type);
-                  setShowLocationTypeModal(false);
-                }}
-              >
-                <ThemedText>{type}</ThemedText>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-          <Button title="Cancel" onPress={() => setShowLocationTypeModal(false)} />
+          <Button title={t.cancel} onPress={() => setShowLanguageModal(false)} />
         </ThemedView>
       </View>
     </Modal>
@@ -287,91 +226,92 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
   return (
     <ScrollView>
       <ThemedView style={styles.container}>
-        <Section title="Personal Information">
+        <Section title={t.personalInfo}>
           <FormInput
-            label="Full Name"
+            label={t.fullName}
             value={data.personalInfo.fullName}
             onChangeText={(value) => updatePersonalInfo('fullName', value)}
             style={inputStyle}
           />
           <FormInput
-            label="Job Title"
+            label={t.jobTitle}
             value={data.personalInfo.jobTitle}
             onChangeText={(value) => updatePersonalInfo('jobTitle', value)}
             style={inputStyle}
           />
           <FormInput
-            label="Email"
+            label={t.email}
             value={data.personalInfo.email}
             onChangeText={(value) => updatePersonalInfo('email', value)}
-            style={mailInputStyle}
+            style={inputStyle}
           />
           <FormInput
-            label="Phone"
+            label={t.phone}
             value={data.personalInfo.phone}
             onChangeText={(value) => updatePersonalInfo('phone', value)}
             style={inputStyle}
           />
           <FormInput
-            label="Address"
+            label={t.address}
             value={data.personalInfo.address}
             onChangeText={(value) => updatePersonalInfo('address', value)}
             style={inputStyle}
           />
         </Section>
 
-        <Section title="Bio">
+        <Section title={t.bio}>
           <View style={styles.bioContainer}>
             <FormInput
-              label="Brief Introduction"
+              label={t.bio}
               value={data.bio}
               onChangeText={updateBio}
               style={[inputStyle, styles.bioInput]}
               multiline
+              placeholder={t.bioPlaceholder}
             />
             <ThemedText style={styles.charCount}>
-              {data.bio?.length || 0}/300 characters
+              {data.bio?.length || 0}/300 {t.characters}
             </ThemedText>
           </View>
         </Section>
 
-        <Section title="Education">
+        <Section title={t.education}>
           {data.education.map((edu, index) => (
             <View key={index} style={styles.itemContainer}>
               <View style={styles.itemHeader}>
-                <ThemedText style={styles.itemTitle}>Education #{index + 1}</ThemedText>
+                <ThemedText style={styles.itemTitle}>{t.education} #{index + 1}</ThemedText>
                 <Button 
-                  title="Remove" 
+                  title={t.remove}
                   color="#ff4444"
-                  onPress={() => removeEducation(index)} 
+                  onPress={() => removeEducation(index)}
                 />
               </View>
               <FormInput
-                label="School"
+                label={t.school}
                 value={edu.school}
                 onChangeText={(value) => updateEducation(index, 'school', value)}
                 style={inputStyle}
               />
               <FormInput
-                label="Location"
+                label={t.location}
                 value={edu.location}
                 onChangeText={(value) => updateEducation(index, 'location', value)}
                 style={inputStyle}
               />
               <FormInput
-                label="Degree"
+                label={t.degree}
                 value={edu.degree}
                 onChangeText={(value) => updateEducation(index, 'degree', value)}
                 style={inputStyle}
               />
               <FormInput
-                label="Year"
+                label={t.year}
                 value={edu.year}
                 onChangeText={(value) => updateEducation(index, 'year', value)}
                 style={inputStyle}
               />
               <FormInput
-                label="Description"
+                label={t.description}
                 value={edu.description}
                 onChangeText={(value) => updateEducation(index, 'description', value)}
                 style={inputStyle}
@@ -379,41 +319,41 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
               />
             </View>
           ))}
-          <Button title="Add Education" onPress={addEducation} />
+          <Button title={t.addEducation} onPress={addEducation} />
         </Section>
 
-        <Section title="Experience">
+        <Section title={t.experience}>
           {data.experience.map((exp, index) => (
             <View key={index} style={styles.itemContainer}>
               <View style={styles.itemHeader}>
-                <ThemedText style={styles.itemTitle}>Experience #{index + 1}</ThemedText>
+                <ThemedText style={styles.itemTitle}>{t.experience} #{index + 1}</ThemedText>
                 <Button 
-                  title="Remove" 
+                  title={t.remove}
                   color="#ff4444"
-                  onPress={() => removeExperience(index)} 
+                  onPress={() => removeExperience(index)}
                 />
               </View>
               <FormInput
-                label="Company"
+                label={t.company}
                 value={exp.company}
                 onChangeText={(value) => updateExperience(index, 'company', value)}
                 style={inputStyle}
               />
               <FormInput
-                label="Position"
+                label={t.position}
                 value={exp.position}
                 onChangeText={(value) => updateExperience(index, 'position', value)}
                 style={inputStyle}
               />
               <FormInput
-                label="Location"
+                label={t.location}
                 value={exp.location}
                 onChangeText={(value) => updateExperience(index, 'location', value)}
                 style={inputStyle}
               />
               <View style={styles.rowContainer}>
                 <View style={styles.halfWidth}>
-                  <ThemedText style={styles.label}>Work Type</ThemedText>
+                  <ThemedText style={styles.label}>{t.workType}</ThemedText>
                   <TouchableOpacity 
                     style={[styles.selector, { borderColor }]}
                     onPress={() => {
@@ -421,11 +361,11 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
                       setShowWorkTypeModal(true);
                     }}
                   >
-                    <ThemedText>{exp.workType || 'Select Type'}</ThemedText>
+                    <ThemedText>{exp.workType || t.selectType}</ThemedText>
                   </TouchableOpacity>
                 </View>
                 <View style={styles.halfWidth}>
-                  <ThemedText style={styles.label}>Location Type</ThemedText>
+                  <ThemedText style={styles.label}>{t.locationType}</ThemedText>
                   <TouchableOpacity 
                     style={[styles.selector, { borderColor }]}
                     onPress={() => {
@@ -433,18 +373,18 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
                       setShowLocationTypeModal(true);
                     }}
                   >
-                    <ThemedText>{exp.locationType || 'Select Type'}</ThemedText>
+                    <ThemedText>{exp.locationType || t.selectType}</ThemedText>
                   </TouchableOpacity>
                 </View>
               </View>
               <FormInput
-                label="Period"
+                label={t.period}
                 value={exp.period}
                 onChangeText={(value) => updateExperience(index, 'period', value)}
                 style={inputStyle}
               />
               <FormInput
-                label="Description"
+                label={t.description}
                 value={exp.description}
                 onChangeText={(value) => updateExperience(index, 'description', value)}
                 style={inputStyle}
@@ -452,75 +392,166 @@ export function CVForm({ data, onUpdate, onSubmit }: CVFormProps) {
               />
             </View>
           ))}
-          <Button title="Add Experience" onPress={addExperience} />
+          <Button title={t.addExperience} onPress={addExperience} />
         </Section>
 
-        <Section title="Languages">
-          {data.languages.map((lang: Language, index: number) => (
+        <Section title={t.languages}>
+          {data.languages.map((lang, index) => (
             <View key={index} style={styles.itemContainer}>
               <View style={styles.itemHeader}>
-                <ThemedText style={styles.itemTitle}>Language #{index + 1}</ThemedText>
+                <ThemedText style={styles.itemTitle}>{t.language} #{index + 1}</ThemedText>
                 <Button 
-                  title="Remove" 
+                  title={t.remove}
                   color="#ff4444"
-                  onPress={() => removeLanguage(index)} 
+                  onPress={() => removeLanguage(index)}
                 />
               </View>
-              <View style={styles.languageRow}>
-                <View style={styles.languageInput}>
-                  <FormInput
-                    label="Language"
-                    value={lang.name}
-                    onChangeText={(value) => updateLanguage(index, 'name', value)}
-                    style={[inputStyle, { marginTop: 5, padding: 10 }]}
-                  />
-                </View>
-                <View style={styles.proficiencySelect}>
-                  <ThemedText style={styles.label}>Proficiency</ThemedText>
-                  <TouchableOpacity 
-                    style={[styles.selector, { borderColor }]}
-                    onPress={() => {
-                      setCurrentLanguageIndex(index);
-                      setShowProficiencyModal(true);
-                    }}
-                  >
-                    <ThemedText>{lang.proficiency || 'Select Level'}</ThemedText>
-                  </TouchableOpacity>
-                </View>
+              <FormInput
+                label={t.language}
+                value={lang.name}
+                onChangeText={(value) => updateLanguage(index, 'name', value)}
+                style={inputStyle}
+              />
+              <View style={styles.proficiencySelect}>
+                <ThemedText style={styles.label}>{t.proficiency}</ThemedText>
+                <TouchableOpacity 
+                  style={[styles.selector, { borderColor }]}
+                  onPress={() => {
+                    setCurrentLanguageIndex(index);
+                    setShowProficiencyModal(true);
+                  }}
+                >
+                  <ThemedText>{lang.proficiency || t.selectLevel}</ThemedText>
+                </TouchableOpacity>
               </View>
             </View>
           ))}
-          <Button title="Add Language" onPress={addLanguage} />
+          <Button title={t.addLanguage} onPress={addLanguage} />
         </Section>
 
-        <Section title="Skills">
-          {data.skills.map((skill: string, index: number) => (
-            <View key={index} style={styles.inputContainer}>
-              <View style={styles.skillContainer}>
+        <Section title={t.skills}>
+          {data.skills.map((skill, index) => (
+            <View key={index} style={styles.skillRow}>
+              <View style={styles.skillInputContainer}>
                 <FormInput
-                  label={`Skill ${index + 1}`}
+                  label={`${t.skill} ${index + 1}`}
                   value={skill}
                   onChangeText={(value) => updateSkill(index, value)}
                   style={[inputStyle, styles.skillInput]}
                 />
+              </View>
+              <View style={styles.skillButtonContainer}>
                 <Button 
-                  title="Remove" 
+                  title={t.remove}
                   color="#ff4444"
-                  onPress={() => removeSkill(index)} 
+                  onPress={() => removeSkill(index)}
                 />
               </View>
             </View>
           ))}
-          <Button title="Add Skill" onPress={addSkill} />
+          <Button title={t.addSkill} onPress={addSkill} />
         </Section>
 
+        <View style={styles.cvLanguageSection}>
+          <ThemedText style={styles.label}>{t.cvLanguage}</ThemedText>
+          <TouchableOpacity 
+            style={[styles.selector, { borderColor }]}
+            onPress={() => setShowLanguageModal(true)}
+          >
+            <ThemedText>{cvLanguage === 'tr' ? 'Türkçe' : 'English'}</ThemedText>
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.submitButton}>
-          <Button title="Generate CV" onPress={onSubmit} />
+          <Button title={t.generateCV} onPress={handleGenerateCV} />
         </View>
       </ThemedView>
-      {renderProficiencyModal()}
-      {renderWorkTypeModal()}
-      {renderLocationTypeModal()}
+
+      {/* Modals */}
+      <Modal
+        visible={showWorkTypeModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowWorkTypeModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <ThemedView style={styles.modalContent}>
+            <ThemedText style={styles.modalTitle}>{t.workType}</ThemedText>
+            <ScrollView>
+              {WORK_TYPES.map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  style={styles.modalOption}
+                  onPress={() => {
+                    updateExperience(currentExperienceIndex, 'workType', type);
+                    setShowWorkTypeModal(false);
+                  }}
+                >
+                  <ThemedText>{type}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <Button title={t.cancel} onPress={() => setShowWorkTypeModal(false)} />
+          </ThemedView>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showLocationTypeModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowLocationTypeModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <ThemedView style={styles.modalContent}>
+            <ThemedText style={styles.modalTitle}>{t.locationType}</ThemedText>
+            <ScrollView>
+              {LOCATION_TYPES.map((type) => (
+                <TouchableOpacity
+                  key={type}
+                  style={styles.modalOption}
+                  onPress={() => {
+                    updateExperience(currentExperienceIndex, 'locationType', type);
+                    setShowLocationTypeModal(false);
+                  }}
+                >
+                  <ThemedText>{type}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <Button title={t.cancel} onPress={() => setShowLocationTypeModal(false)} />
+          </ThemedView>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={showProficiencyModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowProficiencyModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <ThemedView style={styles.modalContent}>
+            <ThemedText style={styles.modalTitle}>{t.proficiency}</ThemedText>
+            <ScrollView>
+              {PROFICIENCY_LEVELS.map((level) => (
+                <TouchableOpacity
+                  key={level}
+                  style={styles.modalOption}
+                  onPress={() => {
+                    updateLanguage(currentLanguageIndex, 'proficiency', level);
+                    setShowProficiencyModal(false);
+                  }}
+                >
+                  <ThemedText>{level}</ThemedText>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+            <Button title={t.cancel} onPress={() => setShowProficiencyModal(false)} />
+          </ThemedView>
+        </View>
+      </Modal>
+      {renderLanguageModal()}
     </ScrollView>
   );
 }
@@ -537,13 +568,15 @@ const FormInput = ({
   value, 
   onChangeText, 
   style,
-  multiline = false 
+  multiline = false,
+  placeholder = ''
 }: { 
   label: string; 
   value: string; 
   onChangeText: (text: string) => void;
   style?: any;
   multiline?: boolean;
+  placeholder?: string;
 }) => (
   <View style={styles.inputContainer}>
     <ThemedText style={styles.label}>{label}</ThemedText>
@@ -551,7 +584,7 @@ const FormInput = ({
       style={[style, multiline && styles.multilineInput]}
       value={value}
       onChangeText={onChangeText}
-      placeholder={label}
+      placeholder={placeholder}
       placeholderTextColor={useThemeColor('secondary')}
       multiline={multiline}
       numberOfLines={multiline ? 3 : 1}
@@ -681,5 +714,25 @@ const styles = StyleSheet.create({
   },
   halfWidth: {
     flex: 1,
+  },
+  cvLanguageSection: {
+    marginTop: 20,
+    marginBottom: 10,
+    padding: 16,
+  },
+  skillRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    gap: 10,
+  },
+  skillInputContainer: {
+    flex: 1,
+    maxWidth: '70%',
+  },
+  skillButtonContainer: {
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    marginTop: 10,
   },
 }); 
