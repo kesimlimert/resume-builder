@@ -3,20 +3,29 @@
     "name": "resume-builder",
     "slug": "resume-builder",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "landscape",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sagolation.resume-builder"
+      "requireFullScreen": true,
+      "bundleIdentifier": "com.sagolation.resume-builder",
+      "infoPlist": {
+        "UISupportedInterfaceOrientations": [
+          "UIInterfaceOrientationLandscapeLeft",
+          "UIInterfaceOrientationLandscapeRight"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.sagolation.resumebuilder",
+      "screenOrientation": "landscape"
     },
     "web": {
       "bundler": "metro",
@@ -42,10 +51,19 @@
           "androidAppId": "ca-app-pub-9995650566626195~4534923257",
           "iosAppId": "ca-app-pub-9995650566626195~4534923257"
         }
-      ]
+      ],
+      "expo-screen-orientation"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "e6ed45b9-374e-4f3a-a9ae-7482a3c039d9"
+      }
     }
   }
 }

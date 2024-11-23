@@ -20,7 +20,7 @@ export function generateCVHtml(data: CVData, language: AppLanguage): string {
             margin-bottom: 5px;
           }
           .job-title {
-            color: #7f8c8d;
+            color: #2c3e50;
             font-size: 1.2em;
             margin-bottom: 20px;
           }

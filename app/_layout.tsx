@@ -6,6 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
 import mobileAds from 'react-native-google-mobile-ads';
+import * as ScreenOrientation from 'expo-screen-orientation';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -25,6 +26,9 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    // Lock the orientation to landscape
+    ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
+
     if (loaded) {
       SplashScreen.hideAsync();
     }
