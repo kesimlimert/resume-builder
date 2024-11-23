@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sagolation.resume-builder"
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +34,15 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "react-native-google-mobile-ads",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-9995650566626195~4534923257",
+          "iosAppId": "ca-app-pub-9995650566626195~4534923257"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

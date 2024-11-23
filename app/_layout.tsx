@@ -5,10 +5,18 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import 'react-native-reanimated';
+import mobileAds from 'react-native-google-mobile-ads';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
 SplashScreen.preventAutoHideAsync();
+
+// Initialize mobile ads
+mobileAds()
+  .initialize()
+  .then(adapterStatuses => {
+    // Initialization complete!
+  });
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
